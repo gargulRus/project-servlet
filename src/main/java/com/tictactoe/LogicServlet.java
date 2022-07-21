@@ -24,9 +24,32 @@ public class LogicServlet extends HttpServlet {
 
         if(Sign.EMPTY != currentSign) {
             RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/index.jsp");
+            dispatcher.forward(req, resp);
+            return;
         }
 
         field.getField().put(index, Sign.CROSS);
+        if(checkWin(resp, currentSession, field)) {
+            return;
+        }
+
+        int emptyFieldIndex = field.getEmptyFieldIndex();
+
+        if(emptyFieldIndex >= 0) {
+            field.getField().put(emptyFieldIndex, Sign.NOUGHT);
+            if (checkWin(resp, currentSession, field)) {
+                return;
+            }
+        } else {
+            currentSession.setAttribute("draw" , true);
+
+            List<Sign> data = field.getFieldData();
+
+            currentSession.setAttribute("data", data);
+
+            resp.sendRedirect("/index.jsp");
+            return;
+        }
 
         List<Sign> data = field.getFieldData();
 
@@ -43,14 +66,29 @@ public class LogicServlet extends HttpServlet {
     }
 
     private Field extractField(HttpSession currentSession) {
-        Object fieldAtrribute = currentSession.getAttribute("field");
+        Object fieldAttribute  = currentSession.getAttribute("field");
 
-        if (Field.class != fieldAtrribute.getClass()) {
+        if (Field.class != fieldAttribute .getClass()) {
             currentSession.invalidate();
             throw new RuntimeException("Session is broken, try one more time");
         }
 
-        return (Field) fieldAtrribute;
+        return (Field) fieldAttribute ;
+    }
+
+    private boolean checkWin(HttpServletResponse response, HttpSession currentSession, Field field) throws IOException {
+        Sign winner = field.checkWin();
+        if (Sign.CROSS == winner || Sign.NOUGHT == winner) {
+            currentSession.setAttribute("winner", winner);
+
+            List<Sign> data = field.getFieldData();
+
+            currentSession.setAttribute("data", data);
+
+            response.sendRedirect("/index.jsp");
+            return true;
+        }
+        return false;
     }
 
 }

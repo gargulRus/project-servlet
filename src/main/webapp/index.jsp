@@ -1,3 +1,4 @@
+<%@ page import="com.tictactoe.Sign" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
@@ -6,6 +7,7 @@
 <head>
     <title>Tic-Tac-Toe</title>
     <link href="static/main.css" rel="stylesheet">
+    <script src="<c:url value="/static/jquery-3.6.0.min.js"/>"></script>
 </head>
 <body>
 <h1>Tic-Tac-Toe</h1>
@@ -29,9 +31,34 @@
         </tr>
     </tbody>
 </table>
-
+<hr>
+<c:set var="CROSSES" value="<%=Sign.CROSS%>" />
+<c:set var="NOUGHTS" value="<%=Sign.NOUGHT%>" />
+<c:if test="${winner == CROSSES}">
+    <h1>Crosses Win!</h1>
+    <button onclick="restart()">Start again</button>
+</c:if>
+<c:if test="${winner == NOUGHTS}">
+    <h1>Noughts Win!</h1>
+    <button onclick="restart()">Start again</button>
+</c:if>
+<c:if test="${draw}">
+    <h1>It's Draw!</h1>
+    <button onclick="restart()">Start again</button>
+</c:if>
 <script>
+function restart() {
+    $.ajax({
+        url: '/restart',
+        type: 'POST',
+        contentType: 'application/json;charset=UTF-8',
+        async: false,
+        success: function (){
+            location.reload();
+        }
+    });
 
+}
 </script>
 
 </body>
